@@ -1,6 +1,9 @@
+//https://github.com/netology-code/jd-homeworks/blob/video/synchronization/task1/README.md - первая задача
+//https://github.com/netology-code/jd-homeworks/blob/video/synchronization/task2/README.md - вторая задача
+
 import java.util.*;
 
-public class Main {
+public class New1 {
     public static final Map<Integer, Integer> sizeToFreq = new HashMap<>();
 
     public static void main(String[] args) throws InterruptedException {
@@ -8,7 +11,7 @@ public class Main {
         List<Thread> threadList = new ArrayList<>();
 
         for (int t = 0; t < 1000; t++) {
-            Thread thread1 = new Thread(() -> {
+        Thread thread1 = new Thread(() -> {
                 int numberOfR = 0;
                 String result = generateRoute("RLRFR", 100);
                 for (int i = 0; i < result.length(); i++) {
@@ -24,9 +27,10 @@ public class Main {
                     }
                 }
                 System.out.println(result + " --->>> " + numberOfR);
-            });
-            thread1.start();
-            threadList.add(thread1);
+
+        });
+        thread1.start();
+        threadList.add(thread1);
         }
 
         for (Thread threadArr : threadList) {

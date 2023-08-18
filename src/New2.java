@@ -1,12 +1,36 @@
 import java.util.*;
 
-public class Main {
+public class New2 {
     public static final Map<Integer, Integer> sizeToFreq = new HashMap<>();
+
 
     public static void main(String[] args) throws InterruptedException {
 
         List<Thread> threadList = new ArrayList<>();
 
+        // 2й ПОТОК
+        Thread thread2 = new Thread(() -> {
+            while (!Thread.interrupted()) {
+                int maxRepeatRInOneLine = 0;
+                synchronized (sizeToFreq) {
+                    try {
+                        sizeToFreq.wait();
+                    } catch (InterruptedException e) {
+                        e.printStackTrace(); //throw new RuntimeException(e) - если так, то можно без break
+                        break; // добавила break, чтобы программа останавливалась после прерывания потоков
+                    }
+                    for (Map.Entry<Integer, Integer> kv : sizeToFreq.entrySet()) {
+                        if (kv.getKey() > maxRepeatRInOneLine) {
+                            maxRepeatRInOneLine = kv.getKey();
+                        }
+                    }
+                    System.out.println("Максимальная ТЕКУЩАЯ частота повторений в одной строке " + maxRepeatRInOneLine);
+                }
+            }
+        });
+        thread2.start();
+
+        // 1й ПОТОК
         for (int t = 0; t < 1000; t++) {
             Thread thread1 = new Thread(() -> {
                 int numberOfR = 0;
@@ -17,23 +41,31 @@ public class Main {
                     }
                 }
                 synchronized (sizeToFreq) {
+                    sizeToFreq.notify();
                     if (sizeToFreq.containsKey(numberOfR)) {
                         sizeToFreq.replace(numberOfR, sizeToFreq.get(numberOfR), (sizeToFreq.get(numberOfR) + 1));
                     } else {
                         sizeToFreq.put(numberOfR, 1);
                     }
+                    System.out.println(result + " --->>> " + numberOfR);
                 }
-                System.out.println(result + " --->>> " + numberOfR);
             });
-            thread1.start();
-            threadList.add(thread1);
-        }
+        thread1.start();
+        threadList.add(thread1);
+            try {
+                Thread.sleep(1);
+            } catch (InterruptedException e) {
+                throw new RuntimeException(e);
+            }
+    }
 
-        for (Thread threadArr : threadList) {
-            threadArr.join(); //выводим на печать только тогда, когда все потоки завершились и мапа полностью заполнена
+        for (Thread thread : threadList) {
+            thread.join();
         }
 
         toPrint();
+
+        thread2.interrupt(); // сделала после toPrint(), чтобы вывод мапы не засорялся выбросом ошибки прерывания
     }
 
     public static String generateRoute(String letters, int length) {

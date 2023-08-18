@@ -8,30 +8,6 @@ public class Main {
 
         List<Thread> threadList = new ArrayList<>();
 
-        // 1й ПОТОК
-        Thread thread1 = new Thread(() -> {
-            for (int t = 0; t < 1000; t++) {
-                int numberOfR = 0;
-                String result = generateRoute("RLRFR", 100);
-                for (int i = 0; i < result.length(); i++) {
-                    if (result.charAt(i) == 'R') {
-                        numberOfR++;
-                    }
-                }
-                synchronized (sizeToFreq) {
-                    sizeToFreq.notify();
-                    if (sizeToFreq.containsKey(numberOfR)) {
-                        sizeToFreq.replace(numberOfR, sizeToFreq.get(numberOfR), (sizeToFreq.get(numberOfR) + 1));
-                    } else {
-                        sizeToFreq.put(numberOfR, 1);
-                    }
-                    System.out.println(result + " --->>> " + numberOfR);
-                }
-            }
-        });
-        thread1.start();
-        threadList.add(thread1);
-
         // 2й ПОТОК
         Thread thread2 = new Thread(() -> {
             while (!Thread.interrupted()) {
@@ -53,6 +29,35 @@ public class Main {
             }
         });
         thread2.start();
+
+        // 1й ПОТОК
+        for (int t = 0; t < 1000; t++) {
+        Thread thread1 = new Thread(() -> {
+                int numberOfR = 0;
+                String result = generateRoute("RLRFR", 100);
+                for (int i = 0; i < result.length(); i++) {
+                    if (result.charAt(i) == 'R') {
+                        numberOfR++;
+                    }
+                }
+                synchronized (sizeToFreq) {
+                    sizeToFreq.notify();
+                    if (sizeToFreq.containsKey(numberOfR)) {
+                        sizeToFreq.replace(numberOfR, sizeToFreq.get(numberOfR), (sizeToFreq.get(numberOfR) + 1));
+                    } else {
+                        sizeToFreq.put(numberOfR, 1);
+                    }
+                    System.out.println(result + " --->>> " + numberOfR);
+                }
+        });
+        thread1.start();
+        threadList.add(thread1);
+            try {
+                Thread.sleep(1);
+            } catch (InterruptedException e) {
+                throw new RuntimeException(e);
+            }
+    }
 
         for (Thread thread : threadList) {
             thread.join();
